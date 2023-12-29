@@ -14,6 +14,7 @@ from homeassistant.const import CONF_NAME
 
 from .calendar_generator import CalendarGenerator
 import datetime
+from datetime import timedelta
 
 __version__ = "1.0.0"
 
@@ -61,9 +62,9 @@ class CatholicCalendarSensor(SensorEntity):
         """Initialize the CatholicCalendar sensor."""
         self._attr_name = name
         self._attr_icon = "mdi:calendar"
-        self._dates: dict[str, list[dict[str, str]]] = []
-        self._attr_extra_state_attributes = {"dates": self._dates}
-
+        self._festivities: list[dict[str, str]] = []
+        self._attr_extra_state_attributes = {"festivities": self._festivities}
+        self._scan_interval = timedelta(hours=1)
         _LOGGER.debug("CatholicCalendarSensor initialized - %s", self)
 
     def __repr__(self: CatholicCalendarSensor) -> str:
@@ -75,9 +76,23 @@ class CatholicCalendarSensor(SensorEntity):
         today = dt_util.now().date()
         _LOGGER.debug("Generating dates for year %s", today.year)
         calendar_generator = CalendarGenerator(today.year)
-        self._dates.clear()
-        self._dates.append(calendar_generator.generate_festivities())
-        _LOGGER.debug("_dates: %s", self._dates)
+        self._festivities.clear()
+
+        festivities = calendar_generator.generate_festivities()
+
+        todays_festivities = []
+
+        if datetime.datetime(today.year, today.month, today.day) in festivities:
+            todays_festivities.extend(
+                festivities[datetime.datetime(today.year, today.month, today.day)]
+            )
+
+        for festivity in sorted(
+            todays_festivities, key=lambda x: x["liturgical_grade"], reverse=True
+        ):
+            self._festivities.append(festivity)
+
+        _LOGGER.debug("_festivities: %s", self._festivities)
 
     @property
     def native_value(self) -> StateType:

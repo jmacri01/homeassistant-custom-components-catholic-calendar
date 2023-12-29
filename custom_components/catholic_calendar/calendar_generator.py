@@ -429,7 +429,7 @@ class CalendarGenerator:
 
         return sunday_after_epiphany
 
-    def __generate_feasts_mary_saints(self, current_solemnity_dates):
+    def __generate_feasts_mary_saints(self):
         festivities = []
         working_dir = os.path.dirname(__file__)
         propriumdesanctis_1970 = []
@@ -449,11 +449,7 @@ class CalendarGenerator:
                     "liturgical_color": festivity["COLOR"][0],
                     "liturgical_grade": festivity["GRADE"],
                 }
-                if (
-                    festivity_to_add["date"].weekday() != 6
-                    and festivity_to_add["date"] not in current_solemnity_dates
-                ):
-                    festivities.append(festivity_to_add)
+                festivities.append(festivity_to_add)
 
         return festivities
 
@@ -618,6 +614,103 @@ class CalendarGenerator:
 
         return festivities
 
+    def __generate_weekdays_christmas_octave(self, current_solemnities_feast_memorials):
+        festivities = []
+
+        weekday_christmas = datetime.datetime(self._year, 12, 25)
+        weekday_christmas_cnt = 1
+        while weekday_christmas >= datetime.datetime(
+            self._year, 12, 25
+        ) and weekday_christmas < datetime.datetime(self._year, 12, 31):
+            weekday_christmas = datetime.datetime(
+                self._year, 12, 25
+            ) + datetime.timedelta(days=weekday_christmas_cnt)
+            if (
+                weekday_christmas not in current_solemnities_feast_memorials
+                and weekday_christmas.weekday() != 6
+            ):
+                ordinal = ""
+                if weekday_christmas_cnt == 1:
+                    ordinal = "1st"
+                if weekday_christmas_cnt == 2:
+                    ordinal = "2nd"
+                if weekday_christmas_cnt == 3:
+                    ordinal = "3rd"
+                if weekday_christmas_cnt >= 4:
+                    ordinal = f"{weekday_christmas_cnt}th"
+
+                name = f"{ordinal} Day of the Octave of Christmas"
+
+                festivities.append(
+                    {
+                        "name": name,
+                        "date": weekday_christmas,
+                        "liturgical_color": "white",
+                        "liturgical_grade": LiturgicalGrade.WEEKDAY,
+                    }
+                )
+            weekday_christmas_cnt += 1
+
+        return festivities
+
+    def __generate_weekdays_lent(self, current_solemnities):
+        festivities = []
+
+        ash_wednesday = self.__get_easter_date() - datetime.timedelta(days=46)
+        palm_sunday = self.__get_easter_date() - datetime.timedelta(days=7)
+
+        weekday_lent = self.__get_easter_date() - datetime.timedelta(days=46)
+        weekday_lent_cnt = 1
+
+        while weekday_lent >= ash_wednesday and weekday_lent < palm_sunday:
+            weekday_lent = ash_wednesday + datetime.timedelta(days=weekday_lent_cnt)
+            if weekday_lent not in current_solemnities and weekday_lent.weekday() != 6:
+                if weekday_lent > self.__get_easter_date() - datetime.timedelta(
+                    days=42
+                ):
+                    upper = int(weekday_lent.strftime("%j"))
+                    diff = upper - int(
+                        (
+                            self.__get_easter_date() - datetime.timedelta(days=42)
+                        ).strftime("%j")
+                    )
+                    current_lent_week = ((diff - diff % 7) // 7) + 1
+                    ordinal = ""
+                    if current_lent_week == 1:
+                        ordinal = "1st"
+                    if current_lent_week == 2:
+                        ordinal = "2nd"
+                    if current_lent_week == 3:
+                        ordinal = "3rd"
+                    if current_lent_week >= 4:
+                        ordinal = f"{current_lent_week}th"
+
+                    name = (
+                        f"{weekday_lent.strftime('%A')} of the {ordinal} Week of Lent"
+                    )
+
+                    festivities.append(
+                        {
+                            "name": name,
+                            "date": weekday_lent,
+                            "liturgical_color": "purple",
+                            "liturgical_grade": LiturgicalGrade.WEEKDAY,
+                        }
+                    )
+                else:
+                    name = f"{weekday_lent.strftime('%A')} after Ash Wednesday"
+                    festivities.append(
+                        {
+                            "name": name,
+                            "date": weekday_lent,
+                            "liturgical_color": "purple",
+                            "liturgical_grade": LiturgicalGrade.WEEKDAY,
+                        }
+                    )
+            weekday_lent_cnt += 1
+
+        return festivities
+
     def __get_solemnities(self, festivities):
         current_solemnity_dates = []
         for festivity in festivities:
@@ -631,6 +724,243 @@ class CalendarGenerator:
             if festivity["liturgical_grade"] >= LiturgicalGrade.MEMORIAL:
                 current_dates.append(festivity["date"])
         return current_dates
+
+    def __generate_memorials(self):
+        festivities = []
+        festivities.append(
+            {
+                "name": "The Immaculate Heart of the Blessed Virgin Mary",
+                "date": self.__get_easter_date() + datetime.timedelta(days=69),
+                "liturgical_color": "white",
+                "liturgical_grade": LiturgicalGrade.MEMORIAL,
+            }
+        )
+
+        working_dir = os.path.dirname(__file__)
+
+        for year in [1970, 2002, 2008]:
+            propriumdesanctis = []
+            propriumdesanctis_tags = {}
+            with open(f"{working_dir}/propriumdesanctis_{year}.json") as json_file:
+                propriumdesanctis = json.load(json_file)
+            with open(f"{working_dir}/propriumdesanctis_{year}_tags.json") as json_file:
+                propriumdesanctis_tags = json.load(json_file)
+
+            for festivity in propriumdesanctis:
+                if (
+                    festivity["GRADE"] == LiturgicalGrade.MEMORIAL
+                    or festivity["GRADE"] == LiturgicalGrade.MEMORIAL_OPT
+                ):
+                    festivities.append(
+                        {
+                            "name": propriumdesanctis_tags[festivity["TAG"]],
+                            "date": datetime.datetime(
+                                self._year, festivity["MONTH"], festivity["DAY"]
+                            ),
+                            "liturgical_color": festivity["COLOR"][0],
+                            "liturgical_grade": festivity["GRADE"],
+                        }
+                    )
+
+        return festivities
+
+    def __generate_decrees(self):
+        festivities = []
+        festivities.append(
+            {
+                "name": "The Immaculate Heart of the Blessed Virgin Mary",
+                "date": self.__get_easter_date() + datetime.timedelta(days=69),
+                "liturgical_color": "white",
+                "liturgical_grade": LiturgicalGrade.MEMORIAL,
+            }
+        )
+
+        working_dir = os.path.dirname(__file__)
+
+        propriumdesanctis = []
+        propriumdesanctis_tags = {}
+        with open(f"{working_dir}/memorialsFromDecrees.json") as json_file:
+            propriumdesanctis = json.load(json_file)
+        with open(f"{working_dir}/memorialsFromDecrees_tags.json") as json_file:
+            propriumdesanctis_tags = json.load(json_file)
+
+        for festivity in propriumdesanctis:
+            if "GRADE" in festivity and (
+                festivity["GRADE"] == LiturgicalGrade.MEMORIAL
+                or festivity["GRADE"] == LiturgicalGrade.MEMORIAL_OPT
+            ):
+                festivities.append(
+                    {
+                        "name": propriumdesanctis_tags[festivity["TAG"]],
+                        "date": datetime.datetime(
+                            self._year, festivity["MONTH"], festivity["DAY"]
+                        ),
+                        "liturgical_color": festivity["COLOR"][0],
+                        "liturgical_grade": festivity["GRADE"],
+                    }
+                )
+
+        return festivities
+
+    def __generate_weekdays_major_seasons(self, current_solemnities_feast_memorials):
+        festivities = []
+        weekday_easter = self.__get_easter_date()
+        weekday_easter_cnt = 1
+        while (
+            weekday_easter >= self.__get_easter_date()
+            and weekday_easter < self.__get_easter_date() + datetime.timedelta(days=49)
+        ):
+            weekday_easter = self.__get_easter_date() + datetime.timedelta(
+                days=weekday_easter_cnt
+            )
+            if (
+                weekday_easter not in current_solemnities_feast_memorials
+                and weekday_easter.weekday() != 6
+            ):
+                upper = int(weekday_easter.strftime("%j"))
+                diff = upper - int(self.__get_easter_date().strftime("%j"))
+                current_easter_week = ((diff - diff % 7) // 7) + 1
+                ordinal = ""
+                if current_easter_week == 1:
+                    ordinal = "1st"
+                if current_easter_week == 2:
+                    ordinal = "2nd"
+                if current_easter_week == 3:
+                    ordinal = "3rd"
+                if current_easter_week >= 4:
+                    ordinal = f"{current_easter_week}th"
+                name = (
+                    f"{weekday_easter.strftime('%A')} of the {ordinal} Week of Easter"
+                )
+                festivities.append(
+                    {
+                        "name": name,
+                        "date": weekday_easter,
+                        "liturgical_color": "white",
+                        "liturgical_grade": LiturgicalGrade.WEEKDAY,
+                    }
+                )
+
+            weekday_easter_cnt += 1
+
+        return festivities
+
+    def __generate_weekdays_ordinary_time(self, current_solemnities_feast_memorials):
+        festivities = []
+        sunday_after_epiphany = self.__get_sunday_after_epiphany()
+        first_weekdays_lower_limit = sunday_after_epiphany
+        first_weekdays_upper_limit = self.__get_easter_date() - datetime.timedelta(
+            days=46
+        )
+
+        ord_weekday = 1
+        current_ord_week = 1
+        first_ordinary = self.__get_sunday_after_epiphany()
+        first_sunday = self.__get_sunday_after_epiphany() + datetime.timedelta(days=7)
+        day_first_sunday = int(first_sunday.strftime("%j"))
+
+        while (
+            first_ordinary >= first_weekdays_lower_limit
+            and first_ordinary < first_weekdays_upper_limit
+        ):
+            first_ordinary = self.__get_sunday_after_epiphany() + datetime.timedelta(
+                days=ord_weekday
+            )
+            if first_ordinary not in current_solemnities_feast_memorials:
+                if first_ordinary > first_sunday:
+                    upper = int(first_ordinary.strftime("%j"))
+                    diff = upper - day_first_sunday
+                    current_ord_week = ((diff - diff % 7) // 7) + 2
+
+                ordinal = ""
+                if current_ord_week == 1:
+                    ordinal = "1st"
+                if current_ord_week == 2:
+                    ordinal = "2nd"
+                if current_ord_week == 3:
+                    ordinal = "3rd"
+                if current_ord_week >= 4:
+                    ordinal = f"{current_ord_week}th"
+                name = f"{first_ordinary.strftime('%A')} of the {ordinal} Week of Ordinary Time"
+                festivities.append(
+                    {
+                        "name": name,
+                        "date": first_ordinary,
+                        "liturgical_color": "green",
+                        "liturgical_grade": LiturgicalGrade.WEEKDAY,
+                    }
+                )
+            ord_weekday += 1
+
+        second_weekdays_lower_limit = self.__get_easter_date() + datetime.timedelta(
+            days=49
+        )
+        second_weekdays_upper_limit = (
+            self.__get_last_sunday_of_advent() - datetime.timedelta(21)
+        )
+
+        ord_weekday = 1
+        last_ordinary = self.__get_easter_date() + datetime.timedelta(days=49)
+        day_last_sunday = int(
+            (self.__get_last_sunday_of_advent() - datetime.timedelta(21)).strftime("%j")
+        )
+
+        while (
+            last_ordinary >= second_weekdays_lower_limit
+            and last_ordinary < second_weekdays_upper_limit
+        ):
+            last_ordinary = self.__get_easter_date() + datetime.timedelta(
+                days=49 + ord_weekday
+            )
+            if last_ordinary not in current_solemnities_feast_memorials:
+                lower = int(last_ordinary.strftime("%j"))
+                diff = day_last_sunday - lower
+                week_diff = (diff - diff % 7) // 7
+                current_ord_week = 34 - week_diff
+
+                ordinal = ""
+                if current_ord_week == 1:
+                    ordinal = "1st"
+                if current_ord_week == 2:
+                    ordinal = "2nd"
+                if current_ord_week == 3:
+                    ordinal = "3rd"
+                if current_ord_week >= 4:
+                    ordinal = f"{current_ord_week}th"
+                name = f"{last_ordinary.strftime('%A')} of the {ordinal} Week of Ordinary Time"
+                festivities.append(
+                    {
+                        "name": name,
+                        "date": last_ordinary,
+                        "liturgical_color": "green",
+                        "liturgical_grade": LiturgicalGrade.WEEKDAY,
+                    }
+                )
+            ord_weekday += 1
+        return festivities
+
+    def __generate_saturday_memorial_bvm(self, current_solemnities_feast_memorials):
+        festivities = []
+        current_saturday = datetime.datetime(self._year, 1, 1)
+        while current_saturday.weekday() != 5:
+            current_saturday += datetime.timedelta(days=1)
+
+        last_sat_dt = datetime.datetime(self._year, 12, 31)
+        while last_sat_dt.weekday() != 5:
+            last_sat_dt -= datetime.timedelta(days=1)
+
+        while current_saturday <= last_sat_dt:
+            current_saturday = current_saturday + datetime.timedelta(days=7)
+            if current_saturday not in current_solemnities_feast_memorials:
+                festivities.append(
+                    {
+                        "name": "Saturday Memorial of the Blessed Virgin Mary",
+                        "date": current_saturday,
+                        "liturgical_color": "white",
+                        "liturgical_grade": LiturgicalGrade.MEMORIAL_OPT,
+                    }
+                )
+        return festivities
 
     def generate_festivities(self):
         festivities = []
@@ -666,12 +996,40 @@ class CalendarGenerator:
             )
         )
 
-        festivities.extend(
-            self.__generate_feasts_mary_saints(self.__get_solemnities(festivities))
-        )
+        festivities.extend(self.__generate_feasts_mary_saints())
 
         festivities.extend(
             self.__generate_weekdays_advent(
+                self.__get_solemnities_feast_memorials(festivities)
+            )
+        )
+
+        festivities.extend(
+            self.__generate_weekdays_christmas_octave(
+                self.__get_solemnities_feast_memorials(festivities)
+            )
+        )
+
+        festivities.extend(
+            self.__generate_weekdays_lent(self.__get_solemnities(festivities))
+        )
+
+        festivities.extend(self.__generate_memorials())
+        festivities.extend(self.__generate_decrees())
+        festivities.extend(
+            self.__generate_weekdays_major_seasons(
+                self.__get_solemnities_feast_memorials(festivities)
+            )
+        )
+
+        festivities.extend(
+            self.__generate_weekdays_ordinary_time(
+                self.__get_solemnities_feast_memorials(festivities)
+            )
+        )
+
+        festivities.extend(
+            self.__generate_saturday_memorial_bvm(
                 self.__get_solemnities_feast_memorials(festivities)
             )
         )
