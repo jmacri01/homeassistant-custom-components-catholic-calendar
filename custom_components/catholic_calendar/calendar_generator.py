@@ -95,11 +95,149 @@ class CalendarGenerator:
         }
         return [ascension, easter7, pentecost]
 
+    def __generate_sunday_major_seasons(self):
+        easter_date = self.__get_easter_date()
+        last_sunday_of_advent = datetime.datetime(self._year, 12, 25)
+        while last_sunday_of_advent.weekday() != 6:
+            last_sunday_of_advent -= datetime.timedelta(days=1)
+
+        festivities = []
+        festivities.append(
+            {
+                "name": "First Sunday of Advent",
+                "date": last_sunday_of_advent - datetime.timedelta(days=21),
+                "liturgical_color": "purple",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        festivities.append(
+            {
+                "name": "Second Sunday of Advent",
+                "date": last_sunday_of_advent - datetime.timedelta(days=14),
+                "liturgical_color": "purple",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        festivities.append(
+            {
+                "name": "Third Sunday of Advent (Gaudete)",
+                "date": last_sunday_of_advent - datetime.timedelta(days=7),
+                "liturgical_color": "pink",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        festivities.append(
+            {
+                "name": "Fourth Sunday of Advent",
+                "date": last_sunday_of_advent,
+                "liturgical_color": "purple",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        festivities.append(
+            {
+                "name": "First Sunday of Lent",
+                "date": easter_date - datetime.timedelta(days=42),
+                "liturgical_color": "purple",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        festivities.append(
+            {
+                "name": "Second Sunday of Lent",
+                "date": easter_date - datetime.timedelta(days=35),
+                "liturgical_color": "purple",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        festivities.append(
+            {
+                "name": "Third Sunday of Lent",
+                "date": easter_date - datetime.timedelta(days=28),
+                "liturgical_color": "purple",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        festivities.append(
+            {
+                "name": "Fourth Sunday of Lent",
+                "date": easter_date - datetime.timedelta(days=21),
+                "liturgical_color": "pink",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        festivities.append(
+            {
+                "name": "Fifth Sunday of Lent",
+                "date": easter_date - datetime.timedelta(days=14),
+                "liturgical_color": "purple",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        festivities.append(
+            {
+                "name": "Palm Sunday",
+                "date": easter_date - datetime.timedelta(days=7),
+                "liturgical_color": "red",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        festivities.append(
+            {
+                "name": "Second Sunday of Easter",
+                "date": easter_date + datetime.timedelta(days=7),
+                "liturgical_color": "white",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        festivities.append(
+            {
+                "name": "Third Sunday of Easter",
+                "date": easter_date + datetime.timedelta(days=14),
+                "liturgical_color": "white",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        festivities.append(
+            {
+                "name": "Fourth Sunday of Easter",
+                "date": easter_date + datetime.timedelta(days=21),
+                "liturgical_color": "white",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        festivities.append(
+            {
+                "name": "Fifth Sunday of Easter",
+                "date": easter_date + datetime.timedelta(days=28),
+                "liturgical_color": "white",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        festivities.append(
+            {
+                "name": "Sixth Sunday of Easter",
+                "date": easter_date + datetime.timedelta(days=35),
+                "liturgical_color": "white",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        festivities.append(
+            {
+                "name": "Holy Trinity Sunday",
+                "date": easter_date + datetime.timedelta(days=56),
+                "liturgical_color": "white",
+                "liturgical_grade": LiturgicalGrade.HIGHER_SOLEMNITY,
+            }
+        )
+        return festivities
+
     def generate_festivities(self):
         festivities = []
         festivities.extend(self.__generate_easter_triduum())
         festivities.extend(self.__generate_christmas_epiphany())
         festivities.extend(self.__generate_ascension_pentecost())
+        festivities.extend(self.__generate_sunday_major_seasons())
 
         festivities_dict = {}
         for festivity in festivities:
