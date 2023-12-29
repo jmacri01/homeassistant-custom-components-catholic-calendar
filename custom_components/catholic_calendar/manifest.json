@@ -1,0 +1,11 @@
+{
+  "domain": "catholic_calendar",
+  "name": "CatholicCalendar",
+  "codeowners": ["@jmacri01"],
+  "dependencies": [],
+  "documentation": "https://github.com/jmacri01/homeassistant-custom-components-catholic-calendar",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/jmacri01/homeassistant-custom-components-catholic-calendar/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}
