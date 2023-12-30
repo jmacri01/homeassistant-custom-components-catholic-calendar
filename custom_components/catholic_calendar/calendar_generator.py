@@ -389,7 +389,7 @@ class CalendarGenerator:
                     "date": datetime.datetime(
                         self._year, festivity["MONTH"], festivity["DAY"]
                     ),
-                    "liturgical_color": festivity["COLOR"][0],
+                    "liturgical_color": festivity["COLOR"][-1],
                     "liturgical_grade": festivity["GRADE"],
                 }
                 if festivity_to_add["date"] in current_solemnity_dates:
@@ -446,7 +446,7 @@ class CalendarGenerator:
                     "date": datetime.datetime(
                         self._year, festivity["MONTH"], festivity["DAY"]
                     ),
-                    "liturgical_color": festivity["COLOR"][0],
+                    "liturgical_color": festivity["COLOR"][-1],
                     "liturgical_grade": festivity["GRADE"],
                 }
                 festivities.append(festivity_to_add)
@@ -482,7 +482,7 @@ class CalendarGenerator:
                         "date": datetime.datetime(
                             self._year, festivity["MONTH"], festivity["DAY"]
                         ),
-                        "liturgical_color": festivity["COLOR"][0],
+                        "liturgical_color": festivity["COLOR"][-1],
                         "liturgical_grade": festivity["GRADE"],
                     }
                 )
@@ -746,7 +746,7 @@ class CalendarGenerator:
                             "date": datetime.datetime(
                                 self._year, festivity["MONTH"], festivity["DAY"]
                             ),
-                            "liturgical_color": festivity["COLOR"][0],
+                            "liturgical_color": festivity["COLOR"][-1],
                             "liturgical_grade": festivity["GRADE"],
                         }
                     )
@@ -784,7 +784,7 @@ class CalendarGenerator:
                         "date": datetime.datetime(
                             self._year, festivity["MONTH"], festivity["DAY"]
                         ),
-                        "liturgical_color": festivity["COLOR"][0],
+                        "liturgical_color": festivity["COLOR"][-1],
                         "liturgical_grade": festivity["GRADE"],
                     }
                 )

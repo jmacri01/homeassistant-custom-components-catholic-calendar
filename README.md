@@ -1,7 +1,7 @@
 # homeassistant-custom-components-pagerduty
-Adds a Catholic Calendar sensor to home assistant.
+Adds a Catholic Calendar sensor and calendar to home assistant.
 
-Based off of https://github.com/Liturgical-Calendar/LiturgicalCalendarAPI for determining calendar logic (Credit to [JohnRDOrazio](https://github.com/JohnRDOrazio))
+Based off of https://github.com/Liturgical-Calendar/LiturgicalCalendarAPI for determining calendar logic.
 
 ## Support
 [![coffee](https://www.buymeacoffee.com/assets/img/custom_images/black_img.png)](https://www.buymeacoffee.com/jmacri)
@@ -20,6 +20,10 @@ Add the following to `<config directory>/configuration.yaml`
 
 ```yaml
 sensor:
+  - platform: catholic_calendar
+    name: Catholic Calendar
+
+calendar:
   - platform: catholic_calendar
     name: Catholic Calendar
 ```

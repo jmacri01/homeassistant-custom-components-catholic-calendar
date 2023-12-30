@@ -15,7 +15,7 @@ from homeassistant.const import CONF_NAME
 from .calendar_generator import CalendarGenerator
 import datetime
 from datetime import timedelta
-
+from .liturgical_grade import LiturgicalGrade
 
 __version__ = "1.0.0"
 
@@ -80,7 +80,6 @@ class CatholicCalendarSensor(SensorEntity):
         # load this year and the next if not already loaded
         for year in [today.year, (today + datetime.timedelta(weeks=52)).year]:
             if year not in self._years_loaded:
-                _LOGGER.debug("Generating dates for year %s", year)
                 self.__generate_festivities(year)
         todays_festivities = []
 
@@ -91,8 +90,11 @@ class CatholicCalendarSensor(SensorEntity):
 
         self._todays_festivities.clear()
         for festivity in sorted(
-            todays_festivities, key=lambda x: x["liturgical_grade"], reverse=True
+            todays_festivities, key=lambda x: x["liturgical_grade"] or 0, reverse=True
         ):
+            festivity["liturgical_grade"] = LiturgicalGrade.descr(
+                festivity["liturgical_grade"]
+            )
             self._todays_festivities.append(festivity)
 
     @property
@@ -101,6 +103,7 @@ class CatholicCalendarSensor(SensorEntity):
         return dt_util.now().date()
 
     def __generate_festivities(self, year):
+        _LOGGER.debug("Generating dates for year %s", year)
         calendar_generator = CalendarGenerator(year)
         festivities = calendar_generator.generate_festivities()
         self._years_loaded.append(year)

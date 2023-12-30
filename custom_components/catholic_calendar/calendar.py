@@ -16,6 +16,7 @@ from homeassistant.core import HomeAssistant
 import datetime
 from datetime import timedelta, timezone
 from homeassistant.util import dt as dt_util
+from .liturgical_grade import LiturgicalGrade
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -108,19 +109,27 @@ class CatholicCalendar(CalendarEntity):
     def __get_calendar_events(self, date) -> list[CalendarEvent]:
         calendar_events = []
         if datetime.datetime(date.year, date.month, date.day) in self._festivities:
-            for festivity in self._festivities[
-                datetime.datetime(date.year, date.month, date.day)
-            ]:
+            for festivity in sorted(
+                self._festivities[datetime.datetime(date.year, date.month, date.day)],
+                key=lambda x: x["liturgical_grade"] or 0,
+                reverse=True,
+            ):
                 calendar_events.append(
-                    CalendarEvent(start=date, end=date, summary=festivity["name"])
+                    CalendarEvent(
+                        start=datetime.date(date.year, date.month, date.day),
+                        end=datetime.date(date.year, date.month, date.day),
+                        summary=festivity["name"],
+                        description=f"liturgical_color: {festivity['liturgical_color']}, liturgical_grade: {LiturgicalGrade.descr(festivity['liturgical_grade'])}",
+                    )
                 )
         return calendar_events
 
     def __generate_festivities(self, year):
+        _LOGGER.debug("Generating dates for year %s", year)
         calendar_generator = CalendarGenerator(year)
         festivities = calendar_generator.generate_festivities()
         self._years_loaded.append(year)
-        for key in festivities.keys():
+        for key in festivities:
             if key not in self._festivities:
                 self._festivities.update({key: []})
             self._festivities[key].extend(festivities[key])
