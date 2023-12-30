@@ -589,15 +589,8 @@ class CalendarGenerator:
                 diff = upper - int(advent_1.strftime("%j"))
                 current_adv_week = ((diff - diff % 7) // 7) + 1
 
-                ordinal = ""
-                if current_adv_week == 1:
-                    ordinal = "1st"
-                if current_adv_week == 2:
-                    ordinal = "2nd"
-                if current_adv_week == 3:
-                    ordinal = "3rd"
-                if current_adv_week == 4:
-                    ordinal = "4th"
+                ordinal = self.__get_ordinal(current_adv_week)
+
                 name = (
                     f"{weekday_advent.strftime('%A')} of the {ordinal} Week of Advent"
                 )
@@ -629,15 +622,7 @@ class CalendarGenerator:
                 weekday_christmas not in current_solemnities_feast_memorials
                 and weekday_christmas.weekday() != 6
             ):
-                ordinal = ""
-                if weekday_christmas_cnt == 1:
-                    ordinal = "1st"
-                if weekday_christmas_cnt == 2:
-                    ordinal = "2nd"
-                if weekday_christmas_cnt == 3:
-                    ordinal = "3rd"
-                if weekday_christmas_cnt >= 4:
-                    ordinal = f"{weekday_christmas_cnt}th"
+                ordinal = self.__get_ordinal(weekday_christmas_cnt + 1)
 
                 name = f"{ordinal} Day of the Octave of Christmas"
 
@@ -652,6 +637,18 @@ class CalendarGenerator:
             weekday_christmas_cnt += 1
 
         return festivities
+
+    def __get_ordinal(self, i):
+        ordinal = ""
+        if i == 1:
+            ordinal = "1st"
+        if i == 2:
+            ordinal = "2nd"
+        if i == 3:
+            ordinal = "3rd"
+        if i >= 4:
+            ordinal = f"{i}th"
+        return ordinal
 
     def __generate_weekdays_lent(self, current_solemnities):
         festivities = []
@@ -675,15 +672,7 @@ class CalendarGenerator:
                         ).strftime("%j")
                     )
                     current_lent_week = ((diff - diff % 7) // 7) + 1
-                    ordinal = ""
-                    if current_lent_week == 1:
-                        ordinal = "1st"
-                    if current_lent_week == 2:
-                        ordinal = "2nd"
-                    if current_lent_week == 3:
-                        ordinal = "3rd"
-                    if current_lent_week >= 4:
-                        ordinal = f"{current_lent_week}th"
+                    ordinal = self.__get_ordinal(current_lent_week)
 
                     name = (
                         f"{weekday_lent.strftime('%A')} of the {ordinal} Week of Lent"
@@ -820,15 +809,7 @@ class CalendarGenerator:
                 upper = int(weekday_easter.strftime("%j"))
                 diff = upper - int(self.__get_easter_date().strftime("%j"))
                 current_easter_week = ((diff - diff % 7) // 7) + 1
-                ordinal = ""
-                if current_easter_week == 1:
-                    ordinal = "1st"
-                if current_easter_week == 2:
-                    ordinal = "2nd"
-                if current_easter_week == 3:
-                    ordinal = "3rd"
-                if current_easter_week >= 4:
-                    ordinal = f"{current_easter_week}th"
+                ordinal = self.__get_ordinal(current_easter_week)
                 name = (
                     f"{weekday_easter.strftime('%A')} of the {ordinal} Week of Easter"
                 )
@@ -872,15 +853,7 @@ class CalendarGenerator:
                     diff = upper - day_first_sunday
                     current_ord_week = ((diff - diff % 7) // 7) + 2
 
-                ordinal = ""
-                if current_ord_week == 1:
-                    ordinal = "1st"
-                if current_ord_week == 2:
-                    ordinal = "2nd"
-                if current_ord_week == 3:
-                    ordinal = "3rd"
-                if current_ord_week >= 4:
-                    ordinal = f"{current_ord_week}th"
+                ordinal = self.__get_ordinal(current_ord_week)
                 name = f"{first_ordinary.strftime('%A')} of the {ordinal} Week of Ordinary Time"
                 festivities.append(
                     {
@@ -918,15 +891,7 @@ class CalendarGenerator:
                 week_diff = (diff - diff % 7) // 7
                 current_ord_week = 34 - week_diff
 
-                ordinal = ""
-                if current_ord_week == 1:
-                    ordinal = "1st"
-                if current_ord_week == 2:
-                    ordinal = "2nd"
-                if current_ord_week == 3:
-                    ordinal = "3rd"
-                if current_ord_week >= 4:
-                    ordinal = f"{current_ord_week}th"
+                ordinal = self.__get_ordinal(current_ord_week)
                 name = f"{last_ordinary.strftime('%A')} of the {ordinal} Week of Ordinary Time"
                 festivities.append(
                     {

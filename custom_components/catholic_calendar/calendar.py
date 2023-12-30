@@ -79,7 +79,10 @@ class CatholicCalendar(CalendarEntity):
         if curr_date.year not in self._years_loaded:
             self.__generate_festivities(curr_date.year)
 
-        return self.__get_calendar_event(curr_date)
+        events = self.__get_calendar_events(curr_date)
+        if len(events) == 0:
+            return None
+        return events[0]
 
     async def async_get_events(
         self,
@@ -92,19 +95,26 @@ class CatholicCalendar(CalendarEntity):
             if year not in self._years_loaded:
                 self.__generate_festivities(year)
         calendar_events = []
-        for date in self._festivities:
-            calendar_events.extend(self.__get_calendar_event(date))
-        _LOGGER.info("calendar_events: %s", calendar_events)
+
+        curr_date = start_date
+        while curr_date <= end_date:
+            _LOGGER.debug("getting calender event for date: %s", curr_date)
+            calendar_events.extend(self.__get_calendar_events(curr_date))
+            curr_date += datetime.timedelta(days=1)
+
+        _LOGGER.debug("retrieved calendar_events: %s", calendar_events)
         return calendar_events
 
-    def __get_calendar_event(self, date):
-        summary = ""
+    def __get_calendar_events(self, date) -> list[CalendarEvent]:
+        calendar_events = []
         if datetime.datetime(date.year, date.month, date.day) in self._festivities:
             for festivity in self._festivities[
                 datetime.datetime(date.year, date.month, date.day)
             ]:
-                summary += f"{festivity['name']}. "
-        return CalendarEvent(date, date, summary)
+                calendar_events.append(
+                    CalendarEvent(start=date, end=date, summary=festivity["name"])
+                )
+        return calendar_events
 
     def __generate_festivities(self, year):
         calendar_generator = CalendarGenerator(year)
