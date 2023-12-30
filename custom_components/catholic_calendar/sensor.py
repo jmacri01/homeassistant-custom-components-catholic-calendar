@@ -17,7 +17,7 @@ import datetime
 from datetime import timedelta
 from .liturgical_grade import LiturgicalGrade
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 COMPONENT_REPO = (
     "https://github.com/jmacri01/homeassistant-custom-components-catholic-calendar"
