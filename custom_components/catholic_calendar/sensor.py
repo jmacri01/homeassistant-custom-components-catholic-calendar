@@ -92,7 +92,9 @@ class CatholicCalendarSensor(SensorEntity):
         for festivity in sorted(
             todays_festivities, key=lambda x: x["liturgical_grade"] or 0, reverse=True
         ):
-            festivity["liturgical_grade"] = LiturgicalGrade.descr(
+            if "liturgical_grade_desc" not in festivity:
+                festivity.update({"liturgical_grade_desc": ""})
+            festivity["liturgical_grade_desc"] = LiturgicalGrade.descr(
                 festivity["liturgical_grade"]
             )
             self._todays_festivities.append(festivity)
