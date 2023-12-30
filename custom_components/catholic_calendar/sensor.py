@@ -1,4 +1,4 @@
-"""PagerDuty sensor."""
+"""CatholicCalendar sensor."""
 from __future__ import annotations
 import logging
 import voluptuous as vol
@@ -15,6 +15,7 @@ from homeassistant.const import CONF_NAME
 from .calendar_generator import CalendarGenerator
 import datetime
 from datetime import timedelta
+
 
 __version__ = "1.0.0"
 
@@ -62,9 +63,10 @@ class CatholicCalendarSensor(SensorEntity):
         """Initialize the CatholicCalendar sensor."""
         self._attr_name = name
         self._attr_icon = "mdi:calendar"
-        self._festivities: list[dict[str, str]] = []
-        self._attr_extra_state_attributes = {"festivities": self._festivities}
-        self._scan_interval = timedelta(hours=1)
+        self._festivities: dict[datetime.datetime, list[dict[str, str]]] = {}
+        self._todays_festivities: list[dict[str, str]] = []
+        self._attr_extra_state_attributes = {"festivities": self._todays_festivities}
+        self._years_loaded = []
         _LOGGER.debug("CatholicCalendarSensor initialized - %s", self)
 
     def __repr__(self: CatholicCalendarSensor) -> str:
@@ -74,27 +76,35 @@ class CatholicCalendarSensor(SensorEntity):
     def update(self: CatholicCalendarSensor) -> None:
         """Generate dates."""
         today = dt_util.now().date()
-        _LOGGER.debug("Generating dates for year %s", today.year)
-        calendar_generator = CalendarGenerator(today.year)
-        self._festivities.clear()
 
-        festivities = calendar_generator.generate_festivities()
-
+        # load this year and the next if not already loaded
+        for year in [today.year, (today + datetime.timedelta(weeks=52)).year]:
+            if year not in self._years_loaded:
+                _LOGGER.debug("Generating dates for year %s", year)
+                self.__generate_festivities(year)
         todays_festivities = []
 
-        if datetime.datetime(today.year, today.month, today.day) in festivities:
+        if datetime.datetime(today.year, today.month, today.day) in self._festivities:
             todays_festivities.extend(
-                festivities[datetime.datetime(today.year, today.month, today.day)]
+                self._festivities[datetime.datetime(today.year, today.month, today.day)]
             )
 
+        self._todays_festivities.clear()
         for festivity in sorted(
             todays_festivities, key=lambda x: x["liturgical_grade"], reverse=True
         ):
-            self._festivities.append(festivity)
-
-        _LOGGER.debug("_festivities: %s", self._festivities)
+            self._todays_festivities.append(festivity)
 
     @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
         return dt_util.now().date()
+
+    def __generate_festivities(self, year):
+        calendar_generator = CalendarGenerator(year)
+        festivities = calendar_generator.generate_festivities()
+        self._years_loaded.append(year)
+        for key in festivities:
+            if key not in self._festivities:
+                self._festivities.update({key: []})
+            self._festivities[key].extend(festivities[key])
